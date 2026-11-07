@@ -45,7 +45,7 @@ jobs:
           set -euo pipefail
           go run ./tools/repo -check
           # The newest version that the repositories offer, as tetrate prints it.
-          deb=$(grep '^Version: ' apt/dists/stable/main/binary-amd64/Packages | tail -1 | cut -d' ' -f2)
+          deb=$( (grep '^Version: ' apt/dists/stable/main/binary-amd64/Packages || true) | tail -1 | cut -d' ' -f2)
           if [ -z "$deb" ]; then
             echo "::notice::the repositories list no package"
             exit 0
