@@ -15,8 +15,16 @@ import (
 
 // Products is products.json: what this repository publishes.
 type Products struct {
-	SchemaVersion int                `json:"schemaVersion"`
-	Products      map[string]Product `json:"products"`
+	SchemaVersion     int                `json:"schemaVersion"`
+	PackageRepository PackageRepository  `json:"packageRepository"`
+	Products          map[string]Product `json:"products"`
+}
+
+// PackageRepository is the key that signs the apt and dnf metadata. tools/repo
+// uses it.
+type PackageRepository struct {
+	Key         string `json:"key"`
+	Fingerprint string `json:"fingerprint"`
 }
 
 // Product describes one product: where its releases are built and who signs

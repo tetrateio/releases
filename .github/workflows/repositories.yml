@@ -1,0 +1,117 @@
+name: repositories
+
+# Checks the apt and dnf repositories after tools/repo pushed them, then
+# installs tetrate through get.tetrate.io on each supported distribution.
+# It holds no secret: it verifies the signatures with keys/tetrate-packages.asc.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apt/**"
+      - "rpm/**"
+      - "keys/**"
+      - "products.json"
+      - "tools/repo/**"
+      - ".github/workflows/repositories.yml"
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: repositories
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - run: go vet ./... && go test -count=1 ./...
+      - name: Rebuild the repositories and verify the signatures
+        id: check
+        run: |
+          set -euo pipefail
+          go run ./tools/repo -check
+          # The newest version that the repositories offer, as tetrate prints it.
+          deb=$(grep '^Version: ' apt/dists/stable/main/binary-amd64/Packages | tail -1 | cut -d' ' -f2)
+          if [ -z "$deb" ]; then
+            echo "::notice::the repositories list no package"
+            exit 0
+          fi
+          version="v$(echo "${deb%-*}" | sed 's/~/-/')"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  install:
+    needs: check
+    if: needs.check.outputs.version != ''
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ["debian:13", "ubuntu:24.04", "ubuntu:22.04", "fedora:43", "rockylinux:9"]
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.image }}
+    timeout-minutes: 20
+    permissions: {}
+    steps:
+      - name: Install tetrate from get.tetrate.io
+        shell: bash
+        env:
+          VERSION: ${{ needs.check.outputs.version }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if command -v apt-get > /dev/null; then
+            apt-get update -qq
+            apt-get install -y -qq curl ca-certificates > /dev/null
+          fi
+          # get.tetrate.io proxies main of this repository, which caches for
+          # up to five minutes. Wait until it serves the index of this commit.
+          index=apt/dists/stable/Release
+          command -v dnf > /dev/null && index="rpm/$(uname -m)/repodata/repomd.xml"
+          want=$(curl -fsSL "https://raw.githubusercontent.com/tetrateio/releases/$SHA/$index" | sha256sum)
+          for i in $(seq 60); do
+            got=$(curl -fsSL "https://get.tetrate.io/$index" | sha256sum || true)
+            [ "$got" = "$want" ] && break
+            if [ "$i" = 60 ]; then
+              echo "::error::get.tetrate.io does not serve $index of $SHA after ten minutes"
+              exit 1
+            fi
+            sleep 10
+          done
+
+          if command -v apt-get > /dev/null; then
+            install -d -m 0755 /etc/apt/keyrings
+            curl -fsSL https://get.tetrate.io/tetrate-packages.asc -o /etc/apt/keyrings/tetrate.asc
+            echo "deb [signed-by=/etc/apt/keyrings/tetrate.asc] https://get.tetrate.io/apt stable main" > /etc/apt/sources.list.d/tetrate.list
+            apt-get update
+            apt-get install -y tetrate
+          else
+            cat > /etc/yum.repos.d/tetrate.repo <<'EOF'
+          [tetrate]
+          name=Tetrate
+          baseurl=https://get.tetrate.io/rpm/$basearch
+          enabled=1
+          gpgcheck=1
+          repo_gpgcheck=1
+          gpgkey=https://get.tetrate.io/tetrate-packages.asc
+          EOF
+            dnf install -y tetrate
+          fi
+          got=$(tetrate version)
+          if [ "$got" != "$VERSION" ]; then
+            echo "::error::tetrate version printed '$got', want '$VERSION'"
+            exit 1
+          fi

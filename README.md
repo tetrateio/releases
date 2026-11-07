@@ -10,15 +10,7 @@ curl -fsSL https://get.tetrate.io | sh
 
 The installer picks the right file for darwin-arm64, linux-amd64 or linux-arm64 and checks it. Run it with `sh -s -- --help` for the options.
 
-On Debian, Ubuntu, Fedora and RHEL, install the `.deb` or `.rpm` package of a release whose manifest lists `packages`. Replace `vX` with the version, and `amd64` with `arm64` on an Arm host:
-
-```sh
-curl -fLO https://github.com/tetrateio/releases/releases/download/tetrate/vX/tetrate-vX-linux-amd64.deb
-sudo apt install ./tetrate-vX-linux-amd64.deb
-sudo dnf install https://github.com/tetrateio/releases/releases/download/tetrate/vX/tetrate-vX-linux-amd64.rpm
-```
-
-The packages are not in an apt or dnf repository and have no GPG signature. Verify a package with its sigstore bundle, as below, before you install it.
+On Debian, Ubuntu, Fedora and RHEL, add the signed apt or dnf repository at `get.tetrate.io` and install `tetrate` with the system package manager. `docs/releasing.md` of `tetrateio/cli` has the commands. The repositories list the releases whose manifest lists `packages`.
 
 ## What is here
 
@@ -27,6 +19,8 @@ The packages are not in an apt or dnf repository and have no GPG signature. Veri
 | `products.json` | The products this repository publishes, the repository each one is built in, the identity that signs it and its Linux packages. |
 | `<product>/index.json` | Every published version of the product, newest first, and the newest stable release and prerelease. |
 | `<product>/<version>.json` | The manifest of one release: the source repository, tag and commit, the signer, and each file with its platform, size, sha256, download URL and signature bundle. Binaries are under `assets` and Linux packages under `packages`, each with its format. A manifest is written once and never changed. |
+| `apt/` | The apt repository: the suite `stable` with the component `main`. `InRelease` and `Release.gpg` sign `Release`, which lists the digests of the `Packages` indexes. Each index file is also kept under `by-hash`. |
+| `rpm/<arch>/repodata/` | The dnf repository of `x86_64` and of `aarch64`. `repomd.xml.asc` signs `repomd.xml`, which names the other files by digest. |
 | Releases tagged `<product>/<version>` | The files of that release: the binaries, the Linux packages, `checksums.txt` and one sigstore bundle (`.sigstore.json`) for each file. |
 | `keys/tetrate-packages.asc` | The public OpenPGP key `Tetrate packages`, kept for signing apt and dnf repository metadata. Nothing is signed with it here. |
 
@@ -92,9 +86,20 @@ The `pypi` workflow publishes the `tetrate` wheels when a `tetrate/v*` release i
 go run ./tools/wheel -product tetrate -out out/pypi -cosign
 ```
 
+## Update the package repositories
+
+After a promotion, write the apt and dnf indexes from the manifests, sign them and push them:
+
+```sh
+export GPG_TTY=$(tty)
+go run ./tools/repo -commit
+```
+
+The repositories list every stable release of a product that has packages, or every prerelease while the product has no stable release. The packages stay in the releases. A package in the apt pool, `pool/<product>/<version>/<file>`, is the download of the release `<product>/<version>`, and dnf reads each package from its release through `xml:base`. `get.tetrate.io` serves `apt/` and `rpm/` from `main` and redirects the pool. The tool signs with gpg and the key in `products.json`, and needs only the signing subkey. It signs only the indexes that changed and then checks every signature with `keys/tetrate-packages.asc`. It never removes a file, so a client that read an older index still finds the files it names. The `repositories` workflow rebuilds the indexes with `go run ./tools/repo -check`, verifies the signatures and installs `tetrate` through `get.tetrate.io` on Debian, Ubuntu, Fedora and Rocky Linux.
+
 ## Package signing key
 
-`keys/tetrate-packages.asc` is the public key `Tetrate packages <support@tetrate.io>`, fingerprint `4B08B03E4B1664D681ABAB2C05DD5B6BCB7C4791`. Its primary key only certifies. Its subkey `619A8C6E870F7BA1BE3F174FBECC436D664A70F6` signs. Both expire on 2028-11-06. The primary secret key, its passphrase and its revocation certificate are in a shared Tetrate 1Password vault. A maintainer who signs holds only the signing subkey. Nothing here is signed with it. `docs/proposals/linux-package-repositories.md` of `tetrateio/cli` proposes the apt and dnf repositories that would use it.
+`keys/tetrate-packages.asc` is the public key `Tetrate packages <support@tetrate.io>`, fingerprint `4B08B03E4B1664D681ABAB2C05DD5B6BCB7C4791`. Its primary key only certifies. The subkey `619A8C6E870F7BA1BE3F174FBECC436D664A70F6` signs the apt and dnf indexes. A maintainer who runs `tools/repo` holds only this subkey. The subkey `4EB5CA9119369B172332E6929E66726093CB1029` signs the `.rpm` files in the `release` workflow of `tetrateio/cli`, from its `rpm-signing` environment. The keys expire on 2028-11-06. The primary secret key, its passphrase and its revocation certificate are in a shared Tetrate 1Password vault.
 
 ## License
 

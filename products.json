@@ -1,5 +1,9 @@
 {
   "schemaVersion": 1,
+  "packageRepository": {
+    "key": "keys/tetrate-packages.asc",
+    "fingerprint": "4B08B03E4B1664D681ABAB2C05DD5B6BCB7C4791"
+  },
   "products": {
     "tetrate": {
       "summary": "The tetrate command: installs, verifies and runs Tetrate products",
