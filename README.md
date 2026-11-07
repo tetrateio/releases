@@ -73,6 +73,14 @@ go run ./tools/npm -product tetrate -out out/npm -cosign
 
 `out/npm/publish.txt` lists the package directories in publish order with their dist-tag.
 
+## Publish to PyPI
+
+The `pypi` workflow publishes the `tetrate` wheels when a `tetrate/v*` release is published, or by hand with a version. `tools/wheel` builds one wheel per platform from the public release files, after it checks each binary against the manifest and its sigstore bundle. Each wheel holds only the binary, in its scripts directory, so `uvx tetrate`, `uv tool install tetrate`, `pipx install tetrate` and `pip install tetrate` install it into `bin` as it is. The version follows PEP 440: `v0.1.0-alpha.3` is `0.1.0a3`. The upload uses PyPI trusted publishing with attestations and runs in the `pypi` environment, which waits for a reviewer. To build the wheels locally:
+
+```sh
+go run ./tools/wheel -product tetrate -out out/pypi -cosign
+```
+
 ## License
 
 The binaries are licensed under the Tetrate binary license. See [LICENSE](LICENSE).
