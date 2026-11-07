@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "products": {
+    "tetrate": {
+      "summary": "The tetrate command: installs, verifies and runs Tetrate products",
+      "source": "tetrateio/cli",
+      "tagPrefix": "tetrate/",
+      "sourceTag": "^v[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.]+)?$",
+      "platforms": ["darwin-arm64", "linux-amd64", "linux-arm64"],
+      "asset": "tetrate-{version}-{platform}",
+      "checksums": "checksums.txt",
+      "signature": {
+        "bundle": "{asset}.sigstore.json",
+        "issuer": "https://token.actions.githubusercontent.com",
+        "identity": "https://github.com/tetrateio/cli/.github/workflows/release.yml@refs/tags/{version}",
+        "trigger": "push"
+      }
+    }
+  }
+}
