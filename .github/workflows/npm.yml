@@ -74,6 +74,7 @@ jobs:
           if [ -n "$NODE_AUTH_TOKEN" ]; then
             npm whoami || echo "::warning::the NPM_TOKEN secret does not authenticate"
           fi
+          failed=0
           while read -r dir tag; do
             name=$(jq -r .name "out/npm/$dir/package.json")
             version=$(jq -r .version "out/npm/$dir/package.json")
@@ -81,5 +82,16 @@ jobs:
               echo "$name@$version is on npm already"
               continue
             fi
-            npm publish "out/npm/$dir" --provenance --access public --tag "$tag"
+            # A publish with a token that bypasses 2FA is staged: it waits for
+            # an owner to approve it on npmjs.com with 2FA. A version that is
+            # staged already is reported and left for that approval.
+            if ! npm publish "out/npm/$dir" --provenance --access public --tag "$tag" 2>publish.err; then
+              cat publish.err >&2
+              if grep -q 'previously staged version' publish.err; then
+                echo "::notice::$name@$version is staged and waits for approval on npmjs.com"
+              else
+                failed=1
+              fi
+            fi
           done <out/npm/publish.txt
+          exit "$failed"
