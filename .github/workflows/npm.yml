@@ -16,7 +16,11 @@ on:
     inputs:
       version:
         description: The promoted tetrate version, such as v0.1.0-alpha.3
-        required: true
+        required: false
+      check:
+        description: Only check that npm trusts this workflow for every package; stage nothing
+        type: boolean
+        default: false
 
 permissions: {}
 
@@ -25,8 +29,36 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  trust:
+    # npm exchanges the job's OIDC token for a package token only when the
+    # package's trusted publisher names this repository, workflow and
+    # environment. The token is discarded; only the HTTP status is shown.
+    if: github.event_name == 'workflow_dispatch' && inputs.check
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      id-token: write
+    steps:
+      - name: Exchange the OIDC token for each package
+        run: |
+          id=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=npm:registry.npmjs.org" | jq -r .value)
+          echo "::add-mask::$id"
+          failed=0
+          for p in @tetrate/cli-darwin-arm64 @tetrate/cli-linux-x64 @tetrate/cli-linux-arm64 @tetrate/cli tetrate; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -X POST -H "Authorization: Bearer $id" \
+              "https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/${p/\//%2f}")
+            if [ "$code" = 201 ] || [ "$code" = 200 ]; then
+              echo "$p: trusted (HTTP $code)"
+            else
+              echo "::error::$p: not trusted (HTTP $code)"
+              failed=1
+            fi
+          done
+          exit "$failed"
+
   publish:
-    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'tetrate/v')
+    if: (github.event_name == 'workflow_dispatch' && !inputs.check) || startsWith(github.event.release.tag_name, 'tetrate/v')
     runs-on: ubuntu-24.04
     environment: npm
     permissions:
