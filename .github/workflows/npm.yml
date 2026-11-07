@@ -1,0 +1,76 @@
+name: npm
+
+# Publishes the npm packages of a promoted release: one per platform, the
+# main package @tetrate/cli and the unscoped wrapper tetrate. tools/npm builds
+# them from the public release files and checks each binary's sha256 and
+# sigstore signature first. npm trusted publishing exchanges this job's OIDC
+# token for a short-lived publish token, so no npm secret exists. A version
+# that is on npm already is skipped, so a rerun is safe.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The promoted tetrate version, such as v0.1.0-alpha.3
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: npm
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'tetrate/v')
+    runs-on: ubuntu-24.04
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+        with:
+          cosign-release: v3.1.4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Pin npm
+        # Trusted publishing needs npm 11.5.1 or newer.
+        run: npm install -g npm@11.12.1
+      - name: Build the packages
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          version=${INPUT_VERSION:-${RELEASE_TAG#tetrate/}}
+          case $version in
+          v[0-9]*) ;;
+          *) echo "::error::$version is not a tetrate version"; exit 1 ;;
+          esac
+          case $version in
+          *[!A-Za-z0-9._+-]*) echo "::error::$version has a character that a version does not have"; exit 1 ;;
+          esac
+          go run ./tools/npm -product tetrate -version "$version" -out out/npm -cosign
+      - name: Publish
+        run: |
+          while read -r dir tag; do
+            name=$(jq -r .name "out/npm/$dir/package.json")
+            version=$(jq -r .version "out/npm/$dir/package.json")
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "$name@$version is on npm already"
+              continue
+            fi
+            npm publish "out/npm/$dir" --provenance --access public --tag "$tag"
+          done <out/npm/publish.txt

@@ -63,6 +63,16 @@ go run ./tools/formula -product tetrate -tap ../homebrew-tap -commit
 
 The formula comes from the manifest, so it names the same URLs and sha256 digests. Users install with `brew install tetrateio/tap/tetrate`.
 
+## Publish to npm
+
+The `npm` workflow publishes `@tetrate/cli`, its three platform packages and the unscoped `tetrate` when a `tetrate/v*` release is published, or by hand with a version. `tools/npm` builds the packages from the public release files and checks each binary against the manifest and its sigstore bundle. npm trusted publishing needs no stored secret. To build the packages locally:
+
+```sh
+go run ./tools/npm -product tetrate -out out/npm -cosign
+```
+
+`out/npm/publish.txt` lists the package directories in publish order with their dist-tag.
+
 ## License
 
 The binaries are licensed under the Tetrate binary license. See [LICENSE](LICENSE).
