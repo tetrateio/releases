@@ -70,6 +70,10 @@ jobs:
           # uses trusted publishing alone.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          # Which npm account the token is, or none. It prints a name only.
+          if [ -n "$NODE_AUTH_TOKEN" ]; then
+            npm whoami || echo "::warning::the NPM_TOKEN secret does not authenticate"
+          fi
           while read -r dir tag; do
             name=$(jq -r .name "out/npm/$dir/package.json")
             version=$(jq -r .version "out/npm/$dir/package.json")
