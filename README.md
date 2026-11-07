@@ -53,6 +53,16 @@ go run ./tools/promote -product tetrate -tag v0.1.0-alpha.3
 
 The tool downloads the release from the source repository and verifies every file. It creates the release here as a draft with the same files and `LICENSE`, commits the manifest and the index, and publishes the release on that commit. Then it downloads each binary anonymously and checks its sha256. It refuses to rewrite a manifest that exists.
 
+## Update the Homebrew formula
+
+After a promotion, write the formula of the newest release into a checkout of `tetrateio/homebrew-tap` and push it with a signed commit:
+
+```sh
+go run ./tools/formula -product tetrate -tap ../homebrew-tap -commit
+```
+
+The formula comes from the manifest, so it names the same URLs and sha256 digests. Users install with `brew install tetrateio/tap/tetrate`.
+
 ## License
 
 The binaries are licensed under the Tetrate binary license. See [LICENSE](LICENSE).
