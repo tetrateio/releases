@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "product": "tetrate",
+  "version": "v0.1.0-alpha.3",
+  "prerelease": true,
+  "publishedAt": "2026-11-07T05:16:35.518187Z",
+  "source": {
+    "repo": "tetrateio/cli",
+    "tag": "v0.1.0-alpha.3",
+    "commit": "955bd3fa8e0668f4c13cbe50a6b89a934478385c",
+    "publishedAt": "2026-11-06T06:41:42Z"
+  },
+  "signer": {
+    "issuer": "https://token.actions.githubusercontent.com",
+    "identity": "https://github.com/tetrateio/cli/.github/workflows/release.yml@refs/tags/v0.1.0-alpha.3"
+  },
+  "release": "https://github.com/tetrateio/releases/releases/tag/tetrate/v0.1.0-alpha.3",
+  "assets": [
+    {
+      "name": "tetrate-v0.1.0-alpha.3-darwin-arm64",
+      "platform": "darwin-arm64",
+      "sha256": "9e23f11f38b392296d80bdcc29dcbe513671913d769d7b3b04de0ee4463161bf",
+      "size": 19187746,
+      "url": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-darwin-arm64",
+      "bundle": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-darwin-arm64.sigstore.json"
+    },
+    {
+      "name": "tetrate-v0.1.0-alpha.3-linux-amd64",
+      "platform": "linux-amd64",
+      "sha256": "60d33defd450f45672c914542c0368e10e42b44c9ba7f171bb4120bb1eff3b56",
+      "size": 19816608,
+      "url": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-linux-amd64",
+      "bundle": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-linux-amd64.sigstore.json"
+    },
+    {
+      "name": "tetrate-v0.1.0-alpha.3-linux-arm64",
+      "platform": "linux-arm64",
+      "sha256": "c80b99aedd870026768605ab7b770546a2f6c162471caf353f26a0123dd9f61d",
+      "size": 18546848,
+      "url": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-linux-arm64",
+      "bundle": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-linux-arm64.sigstore.json"
+    }
+  ],
+  "checksums": {
+    "name": "checksums.txt",
+    "url": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/checksums.txt",
+    "bundle": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/checksums.txt.sigstore.json"
+  },
+  "license": {
+    "name": "LICENSE",
+    "url": "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/LICENSE"
+  }
+}

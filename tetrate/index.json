@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "product": "tetrate",
+  "latest": {
+    "stable": null,
+    "prerelease": "v0.1.0-alpha.3"
+  },
+  "versions": [
+    {
+      "version": "v0.1.0-alpha.3",
+      "prerelease": true,
+      "publishedAt": "2026-11-07T05:16:35.518187Z",
+      "manifest": "v0.1.0-alpha.3.json"
+    }
+  ]
+}
