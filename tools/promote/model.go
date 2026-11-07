@@ -30,6 +30,15 @@ type Product struct {
 	Asset     string    `json:"asset"`
 	Checksums string    `json:"checksums"`
 	Signature Signature `json:"signature"`
+	Packages  *Packages `json:"packages,omitempty"`
+}
+
+// Packages are the Linux packages of each release, one per platform and
+// format.
+type Packages struct {
+	Asset     string   `json:"asset"`
+	Platforms []string `json:"platforms"`
+	Formats   []string `json:"formats"`
 }
 
 // Signature is how every file of a release is signed.
@@ -60,6 +69,27 @@ func loadProducts(path string) (Products, error) {
 // AssetName is the file name of the binary of a version for a platform.
 func (p Product) AssetName(version, platform string) string {
 	return strings.NewReplacer("{version}", version, "{platform}", platform).Replace(p.Asset)
+}
+
+// PackageName is the file name of the package of a version for a platform
+// and a format.
+func (p Product) PackageName(version, platform, format string) string {
+	return strings.NewReplacer("{version}", version, "{platform}", platform, "{format}", format).Replace(p.Packages.Asset)
+}
+
+// PackageFiles lists the package file names of a version. It is empty when
+// the product has no packages.
+func (p Product) PackageFiles(version string) []Package {
+	if p.Packages == nil {
+		return nil
+	}
+	var out []Package
+	for _, pl := range p.Packages.Platforms {
+		for _, f := range p.Packages.Formats {
+			out = append(out, Package{Name: p.PackageName(version, pl, f), Platform: pl, Format: f})
+		}
+	}
+	return out
 }
 
 // BundleName is the sigstore bundle of a file.
@@ -95,6 +125,7 @@ type Manifest struct {
 	Signer        Signer    `json:"signer"`
 	Release       string    `json:"release"`
 	Assets        []Asset   `json:"assets"`
+	Packages      []Package `json:"packages,omitempty"`
 	Checksums     FileRef   `json:"checksums"`
 	License       FileRef   `json:"license"`
 }
@@ -117,6 +148,17 @@ type Signer struct {
 type Asset struct {
 	Name     string `json:"name"`
 	Platform string `json:"platform"`
+	SHA256   string `json:"sha256"`
+	Size     int64  `json:"size"`
+	URL      string `json:"url"`
+	Bundle   string `json:"bundle"`
+}
+
+// Package is one Linux package. Format is deb or rpm.
+type Package struct {
+	Name     string `json:"name"`
+	Platform string `json:"platform"`
+	Format   string `json:"format"`
 	SHA256   string `json:"sha256"`
 	Size     int64  `json:"size"`
 	URL      string `json:"url"`

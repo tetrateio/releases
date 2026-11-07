@@ -102,6 +102,9 @@ func run(ctx context.Context, dir, repo, name, tag string, dryRun bool) error {
 	for _, pl := range p.Platforms {
 		files = append(files, p.AssetName(tag, pl))
 	}
+	for _, pk := range p.PackageFiles(tag) {
+		files = append(files, pk.Name)
+	}
 	files = append(files, p.Checksums)
 	var want []string
 	for _, f := range files {
@@ -223,7 +226,12 @@ func run(ctx context.Context, dir, repo, name, tag string, dryRun bool) error {
 			return err
 		}
 	}
-	fmt.Printf("Checked the public downloads of %d files\n", len(m.Assets))
+	for _, pk := range m.Packages {
+		if err := checkPublic(ctx, pk.URL, pk.SHA256); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("Checked the public downloads of %d files\n", len(m.Assets)+len(m.Packages))
 	return nil
 }
 
@@ -264,6 +272,19 @@ func buildManifest(p Product, name, repo, tag string, src Release, commit, work 
 			return m, err
 		}
 		m.Assets = append(m.Assets, Asset{Name: f, Platform: pl, SHA256: sum, Size: fi.Size(), URL: base + f, Bundle: base + p.BundleName(f)})
+	}
+	for _, pk := range p.PackageFiles(tag) {
+		path := filepath.Join(work, pk.Name)
+		sum, err := fileSHA256(path)
+		if err != nil {
+			return m, err
+		}
+		fi, err := os.Stat(path)
+		if err != nil {
+			return m, err
+		}
+		pk.SHA256, pk.Size, pk.URL, pk.Bundle = sum, fi.Size(), base+pk.Name, base+p.BundleName(pk.Name)
+		m.Packages = append(m.Packages, pk)
 	}
 	return m, nil
 }

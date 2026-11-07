@@ -10,14 +10,24 @@ curl -fsSL https://get.tetrate.io | sh
 
 The installer picks the right file for darwin-arm64, linux-amd64 or linux-arm64 and checks it. Run it with `sh -s -- --help` for the options.
 
+On Debian, Ubuntu, Fedora and RHEL, install the `.deb` or `.rpm` package of a release whose manifest lists `packages`. Replace `vX` with the version, and `amd64` with `arm64` on an Arm host:
+
+```sh
+curl -fLO https://github.com/tetrateio/releases/releases/download/tetrate/vX/tetrate-vX-linux-amd64.deb
+sudo apt install ./tetrate-vX-linux-amd64.deb
+sudo dnf install https://github.com/tetrateio/releases/releases/download/tetrate/vX/tetrate-vX-linux-amd64.rpm
+```
+
+The packages are not in an apt or dnf repository and have no GPG signature. Verify a package with its sigstore bundle, as below, before you install it.
+
 ## What is here
 
 | Path | Content |
 | --- | --- |
-| `products.json` | The products this repository publishes, the repository each one is built in and the identity that signs it. |
+| `products.json` | The products this repository publishes, the repository each one is built in, the identity that signs it and its Linux packages. |
 | `<product>/index.json` | Every published version of the product, newest first, and the newest stable release and prerelease. |
-| `<product>/<version>.json` | The manifest of one release: the source repository, tag and commit, the signer, and each file with its platform, size, sha256, download URL and signature bundle. A manifest is written once and never changed. |
-| Releases tagged `<product>/<version>` | The files of that release: the binaries, `checksums.txt` and one sigstore bundle (`.sigstore.json`) for each file. |
+| `<product>/<version>.json` | The manifest of one release: the source repository, tag and commit, the signer, and each file with its platform, size, sha256, download URL and signature bundle. Binaries are under `assets` and Linux packages under `packages`, each with its format. A manifest is written once and never changed. |
+| Releases tagged `<product>/<version>` | The files of that release: the binaries, the Linux packages, `checksums.txt` and one sigstore bundle (`.sigstore.json`) for each file. |
 
 Read the indexes from `https://raw.githubusercontent.com/tetrateio/releases/main/<product>/index.json`. They do not need the GitHub API.
 
@@ -51,7 +61,7 @@ go run ./tools/promote -product tetrate -tag v0.1.0-alpha.3 -dry-run
 go run ./tools/promote -product tetrate -tag v0.1.0-alpha.3
 ```
 
-The tool downloads the release from the source repository and verifies every file. It creates the release here as a draft with the same files and `LICENSE`, commits the manifest and the index, and publishes the release on that commit. Then it downloads each binary anonymously and checks its sha256. It refuses to rewrite a manifest that exists.
+The tool downloads the release from the source repository and verifies every file. It creates the release here as a draft with the same files and `LICENSE`, commits the manifest and the index, and publishes the release on that commit. Then it downloads each binary and package anonymously and checks its sha256. It refuses to rewrite a manifest that exists.
 
 ## Update the Homebrew formula
 

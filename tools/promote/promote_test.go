@@ -26,6 +26,15 @@ func TestProductNames(t *testing.T) {
 	if got := p.AssetName("v0.1.0-alpha.3", "darwin-arm64"); got != "tetrate-v0.1.0-alpha.3-darwin-arm64" {
 		t.Errorf("asset %q", got)
 	}
+	if got := p.PackageName("v0.1.0-alpha.3", "linux-arm64", "rpm"); got != "tetrate-v0.1.0-alpha.3-linux-arm64.rpm" {
+		t.Errorf("package %q", got)
+	}
+	if got := len(p.PackageFiles("v0.1.0-alpha.3")); got != 4 {
+		t.Errorf("%d package files, want 4", got)
+	}
+	if got := (Product{}).PackageFiles("v1.0.0"); got != nil {
+		t.Errorf("a product without packages lists %v", got)
+	}
 	if got := p.BundleName("checksums.txt"); got != "checksums.txt.sigstore.json" {
 		t.Errorf("bundle %q", got)
 	}
@@ -133,6 +142,11 @@ func TestBuildManifest(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
+	for _, pk := range p.PackageFiles("v0.1.0-alpha.3") {
+		if err := os.WriteFile(filepath.Join(work, pk.Name), []byte(pk.Name), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
 	now := time.Date(2026, 11, 7, 1, 2, 3, 0, time.UTC)
 	src := Release{Prerelease: true, PublishedAt: time.Date(2026, 11, 6, 6, 40, 0, 0, time.UTC)}
 	m, err := buildManifest(p, "tetrate", "tetrateio/releases", "v0.1.0-alpha.3", src, "955bd3f", work, now)
@@ -152,6 +166,17 @@ func TestBuildManifest(t *testing.T) {
 	wantURL := "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-darwin-arm64"
 	if a.URL != wantURL || a.Bundle != wantURL+".sigstore.json" {
 		t.Errorf("urls %s %s", a.URL, a.Bundle)
+	}
+	if len(m.Packages) != 4 {
+		t.Fatalf("%d packages", len(m.Packages))
+	}
+	pk := m.Packages[1]
+	if pk.Name != "tetrate-v0.1.0-alpha.3-linux-amd64.rpm" || pk.Platform != "linux-amd64" || pk.Format != "rpm" || pk.Size != int64(len(pk.Name)) || len(pk.SHA256) != 64 {
+		t.Errorf("package %+v", pk)
+	}
+	pkURL := "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/" + pk.Name
+	if pk.URL != pkURL || pk.Bundle != pkURL+".sigstore.json" {
+		t.Errorf("package urls %s %s", pk.URL, pk.Bundle)
 	}
 	if m.Release != "https://github.com/tetrateio/releases/releases/tag/tetrate/v0.1.0-alpha.3" {
 		t.Errorf("release %s", m.Release)
