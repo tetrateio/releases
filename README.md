@@ -40,7 +40,18 @@ Then check the file against `checksums.txt`.
 
 ## How releases arrive
 
-A release workflow in a product's repository asks this repository to publish a tag. The mirror workflow here downloads that release, verifies every file against the signer in `products.json`, and refuses on any failure. It then creates the release, writes the manifest and the index, and commits them. Only the mirror publishes here.
+A release is built and signed in the product's own repository first. A maintainer then promotes it here with `tools/promote`, which downloads the release, verifies every file against the signer in `products.json` and refuses on any failure. It creates the release, writes the manifest and the index, and commits them.
+
+## Promote a release
+
+A maintainer promotes a release on purpose, after trying it from the private source. In a clean checkout of `main`, with `gh` logged in, `cosign` on `PATH` and a signing key for git:
+
+```sh
+go run ./tools/promote -product tetrate -tag v0.1.0-alpha.3 -dry-run
+go run ./tools/promote -product tetrate -tag v0.1.0-alpha.3
+```
+
+The tool downloads the release from the source repository and verifies every file. It creates the release here as a draft with the same files and `LICENSE`, commits the manifest and the index, and publishes the release on that commit. Then it downloads each binary anonymously and checks its sha256. It refuses to rewrite a manifest that exists.
 
 ## License
 
