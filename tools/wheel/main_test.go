@@ -63,6 +63,12 @@ func TestWriteWheel(t *testing.T) {
 		b, _ := io.ReadAll(rc)
 		return string(b)
 	}
+	// PyPI refuses an entry that ends with a data descriptor (flag bit 3).
+	for _, f := range zr.File {
+		if f.Flags&0x8 != 0 {
+			t.Errorf("%s has a data descriptor", f.Name)
+		}
+	}
 	bin := files["tetrate-0.1.0a3.data/scripts/tetrate"]
 	if bin == nil || bin.Mode().Perm() != 0o755 {
 		t.Fatalf("the binary is missing or not executable: %v", bin)

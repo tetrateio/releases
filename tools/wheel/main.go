@@ -18,6 +18,7 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"compress/flate"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -26,6 +27,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"hash/crc32"
 	"io"
 	"net/http"
 	"os"
@@ -234,14 +236,35 @@ func writeWheel(out, product, pyVersion, tag string, tags []string, binary, lice
 	return name, os.WriteFile(filepath.Join(out, name), buf.Bytes(), 0o644)
 }
 
+// addFile writes one entry with its CRC and sizes in the header. PyPI refuses
+// a wheel whose entries end with a data descriptor, which zip.Writer.CreateHeader
+// writes, so the entry is compressed first and written with CreateRaw.
 func addFile(zw *zip.Writer, path string, body []byte, mode os.FileMode) error {
-	h := &zip.FileHeader{Name: path, Method: zip.Deflate, Modified: zipTime}
-	h.SetMode(mode)
-	w, err := zw.CreateHeader(h)
+	var compressed bytes.Buffer
+	fw, err := flate.NewWriter(&compressed, flate.BestCompression)
 	if err != nil {
 		return err
 	}
-	_, err = w.Write(body)
+	if _, err := fw.Write(body); err != nil {
+		return err
+	}
+	if err := fw.Close(); err != nil {
+		return err
+	}
+	h := &zip.FileHeader{
+		Name:               path,
+		Method:             zip.Deflate,
+		Modified:           zipTime,
+		CRC32:              crc32.ChecksumIEEE(body),
+		CompressedSize64:   uint64(compressed.Len()),
+		UncompressedSize64: uint64(len(body)),
+	}
+	h.SetMode(mode)
+	w, err := zw.CreateRaw(h)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(compressed.Bytes())
 	return err
 }
 
