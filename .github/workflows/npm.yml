@@ -64,6 +64,11 @@ jobs:
           esac
           go run ./tools/npm -product tetrate -version "$version" -out out/npm -cosign
       - name: Publish
+        env:
+          # Only for the first publish of a new package: npm accepts a trusted
+          # publisher only on a package that exists. Without the secret, npm
+          # uses trusted publishing alone.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           while read -r dir tag; do
             name=$(jq -r .name "out/npm/$dir/package.json")

@@ -65,7 +65,7 @@ The formula comes from the manifest, so it names the same URLs and sha256 digest
 
 ## Publish to npm
 
-The `npm` workflow publishes `@tetrate/cli`, its three platform packages and the unscoped `tetrate` when a `tetrate/v*` release is published, or by hand with a version. `tools/npm` builds the packages from the public release files and checks each binary against the manifest and its sigstore bundle. npm trusted publishing needs no stored secret. To build the packages locally:
+The `npm` workflow publishes `@tetrate/cli`, its three platform packages and the unscoped `tetrate` when a `tetrate/v*` release is published, or by hand with a version. `tools/npm` builds the packages from the public release files and checks each binary against the manifest and its sigstore bundle. npm trusted publishing needs no stored secret. Only the first publish of a new package uses a short-lived `NPM_TOKEN` secret in the `npm` environment, because npm accepts a trusted publisher only on a package that exists. Delete the secret after that publish. To build the packages locally:
 
 ```sh
 go run ./tools/npm -product tetrate -out out/npm -cosign
