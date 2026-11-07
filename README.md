@@ -28,6 +28,7 @@ The packages are not in an apt or dnf repository and have no GPG signature. Veri
 | `<product>/index.json` | Every published version of the product, newest first, and the newest stable release and prerelease. |
 | `<product>/<version>.json` | The manifest of one release: the source repository, tag and commit, the signer, and each file with its platform, size, sha256, download URL and signature bundle. Binaries are under `assets` and Linux packages under `packages`, each with its format. A manifest is written once and never changed. |
 | Releases tagged `<product>/<version>` | The files of that release: the binaries, the Linux packages, `checksums.txt` and one sigstore bundle (`.sigstore.json`) for each file. |
+| `keys/tetrate-packages.asc` | The public OpenPGP key `Tetrate packages`, kept for signing apt and dnf repository metadata. Nothing is signed with it here. |
 
 Read the indexes from `https://raw.githubusercontent.com/tetrateio/releases/main/<product>/index.json`. They do not need the GitHub API.
 
@@ -90,6 +91,10 @@ The `pypi` workflow publishes the `tetrate` wheels when a `tetrate/v*` release i
 ```sh
 go run ./tools/wheel -product tetrate -out out/pypi -cosign
 ```
+
+## Package signing key
+
+`keys/tetrate-packages.asc` is the public key `Tetrate packages <support@tetrate.io>`, fingerprint `4B08B03E4B1664D681ABAB2C05DD5B6BCB7C4791`. Its primary key only certifies. Its subkey `619A8C6E870F7BA1BE3F174FBECC436D664A70F6` signs. Both expire on 2028-11-06. The primary secret key, its passphrase and its revocation certificate are in a shared Tetrate 1Password vault. A maintainer who signs holds only the signing subkey. Nothing here is signed with it. `docs/proposals/linux-package-repositories.md` of `tetrateio/cli` proposes the apt and dnf repositories that would use it.
 
 ## License
 
