@@ -44,7 +44,7 @@ A release is built and signed in the product's own repository first. A maintaine
 
 ## Promote a release
 
-A maintainer promotes a release on purpose, after trying it from the private source. In a clean checkout of `main`, with `gh` logged in, `cosign` on `PATH` and a signing key for git:
+A maintainer promotes a release on purpose, after trying it from the private source. For `tetrate`, the whole sequence of release, promotion, npm approval and Homebrew update is in `docs/releasing.md` of `tetrateio/cli`. In a clean checkout of `main`, with `gh` logged in, `cosign` on `PATH` and a signing key for git:
 
 ```sh
 go run ./tools/promote -product tetrate -tag v0.1.0-alpha.3 -dry-run
