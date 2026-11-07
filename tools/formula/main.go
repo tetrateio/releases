@@ -153,8 +153,10 @@ class {{.Class}} < Formula
   on_macos do
     depends_on arch: :arm64
 {{- with .MacArm}}
-    url "{{.URL}}"
-    sha256 "{{.SHA256}}"
+    on_arm do
+      url "{{.URL}}"
+      sha256 "{{.SHA256}}"
+    end
 {{- end}}
   end
 
