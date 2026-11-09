@@ -176,7 +176,11 @@ class {{.Class}} < Formula
   end
 
   def install
-    bin.install Dir["{{.Product}}-*"].first => "{{.Product}}"
+    # The download is the bare binary, and its mode depends on how Homebrew
+    # stages it. Make it executable before the completions run it.
+    binary = Dir["{{.Product}}-*"].first
+    chmod 0755, binary
+    bin.install binary => "{{.Product}}"
     generate_completions_from_executable(bin/"{{.Product}}", "completion")
   end
 

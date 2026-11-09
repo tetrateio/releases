@@ -40,6 +40,7 @@ func TestRenderFromThePromotedManifest(t *testing.T) {
 		`url "https://github.com/tetrateio/releases/releases/download/tetrate/v0.1.0-alpha.3/tetrate-v0.1.0-alpha.3-darwin-arm64"`,
 		`sha256 "9e23f11f38b392296d80bdcc29dcbe513671913d769d7b3b04de0ee4463161bf"`,
 		"on_intel do", "on_arm do",
+		"chmod 0755, binary\n    bin.install binary => \"tetrate\"",
 		`generate_completions_from_executable(bin/"tetrate", "completion")`,
 		`shell_output("#{bin}/tetrate version")`,
 	} {
