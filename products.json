@@ -24,6 +24,21 @@
         "platforms": ["linux-amd64", "linux-arm64"],
         "formats": ["deb", "rpm"]
       }
+    },
+    "egd": {
+      "summary": "egd: the Tetrate build of the Envoy Gateway controller",
+      "source": "tetrateio/egd",
+      "tagPrefix": "egd/",
+      "sourceTag": "^v[0-9]+\\.[0-9]+\\.[0-9]+-tetrate\\.[0-9]+\\.[0-9a-f]+$",
+      "platforms": ["darwin-arm64", "linux-amd64", "linux-arm64"],
+      "asset": "egd-{platform}",
+      "checksums": "checksums.txt",
+      "signature": {
+        "bundle": "{asset}.sigstore.json",
+        "issuer": "https://token.actions.githubusercontent.com",
+        "identity": "https://github.com/tetrateio/egd/.github/workflows/release.yml@refs/tags/{version}",
+        "trigger": "push"
+      }
     }
   }
 }
