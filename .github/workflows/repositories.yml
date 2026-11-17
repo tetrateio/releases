@@ -3,16 +3,12 @@ name: repositories
 # Checks the apt and dnf repositories after tools/repo pushed them, then
 # installs tetrate through get.tetrate.io on each supported distribution.
 # It holds no secret: it verifies the signatures with keys/tetrate-packages.asc.
+# On a push it runs only when the repositories, their tools or the packaging
+# part of products.json changed. A product without packages, such as egd,
+# starts nothing.
 on:
   push:
     branches: [main]
-    paths:
-      - "apt/**"
-      - "rpm/**"
-      - "keys/**"
-      - "products.json"
-      - "tools/repo/**"
-      - ".github/workflows/repositories.yml"
   schedule:
     - cron: "23 5 * * *"
   workflow_dispatch:
@@ -24,7 +20,47 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    outputs:
+      run: ${{ github.event_name != 'push' || steps.paths.outputs.repo == 'true' || steps.packaging.outputs.changed == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        id: paths
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            repo:
+              - 'apt/**'
+              - 'rpm/**'
+              - 'keys/**'
+              - 'tools/repo/**'
+              - 'go.mod'
+              - 'go.sum'
+              - '.github/workflows/repositories.yml'
+      - name: Compare the packaging part of products.json
+        id: packaging
+        if: github.event_name == 'push'
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          part='{packageRepository, products: (.products | map_values(select(.packages != null)))}'
+          new=$(jq -cS "$part" products.json)
+          old=$( (git show "$BEFORE:products.json" 2>/dev/null || true) | jq -cS "$part" 2>/dev/null || true)
+          if [ "$new" != "$old" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   check:
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
