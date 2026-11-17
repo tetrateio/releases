@@ -1,0 +1,12 @@
+Package: tetrate
+Version: 0.1.0~alpha.4-1
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Tetrate <support@tetrate.io>
+Installed-Size: 19385
+Homepage: https://get.tetrate.io
+Description: The tetrate command: installs, verifies and runs Tetrate products
+Filename: pool/tetrate/v0.1.0-alpha.4/tetrate-v0.1.0-alpha.4-linux-amd64.deb
+Size: 7529572
+SHA256: 1c0c852233e4ccb611f635bc678f67b41f639c85e35da575206ebd55266a10d2
