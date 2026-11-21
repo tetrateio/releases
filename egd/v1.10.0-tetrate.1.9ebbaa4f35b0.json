@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "product": "egd",
+  "version": "v1.10.0-tetrate.1.9ebbaa4f35b0",
+  "prerelease": false,
+  "publishedAt": "2026-11-21T20:25:14.385189Z",
+  "source": {
+    "repo": "tetrateio/egd",
+    "tag": "v1.10.0-tetrate.1.9ebbaa4f35b0",
+    "commit": "9e9617fd4a8113bfab7e0b67d7f49b4b6dde9ead",
+    "publishedAt": "2026-11-21T06:08:35Z"
+  },
+  "signer": {
+    "issuer": "https://token.actions.githubusercontent.com",
+    "identity": "https://github.com/tetrateio/egd/.github/workflows/release.yml@refs/tags/v1.10.0-tetrate.1.9ebbaa4f35b0"
+  },
+  "release": "https://github.com/tetrateio/releases/releases/tag/egd/v1.10.0-tetrate.1.9ebbaa4f35b0",
+  "assets": [
+    {
+      "name": "egd-darwin-arm64.tar.xz",
+      "platform": "darwin-arm64",
+      "sha256": "79eabcb46186e30b6ec904420017fd715b2479b9c9378294b74358567742cd55",
+      "size": 23944300,
+      "url": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/egd-darwin-arm64.tar.xz",
+      "bundle": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/egd-darwin-arm64.tar.xz.sigstore.json"
+    },
+    {
+      "name": "egd-linux-amd64.tar.xz",
+      "platform": "linux-amd64",
+      "sha256": "fafd33ac554069c56fce24b2b8f304dcbafc1aa70856119fb45beda99cf25abe",
+      "size": 25542688,
+      "url": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/egd-linux-amd64.tar.xz",
+      "bundle": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/egd-linux-amd64.tar.xz.sigstore.json"
+    },
+    {
+      "name": "egd-linux-arm64.tar.xz",
+      "platform": "linux-arm64",
+      "sha256": "edcec2a9ae05efe94321bad9a613e08fb3f70cd0038cc42b2afb1f45a71dcf11",
+      "size": 21937308,
+      "url": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/egd-linux-arm64.tar.xz",
+      "bundle": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/egd-linux-arm64.tar.xz.sigstore.json"
+    }
+  ],
+  "checksums": {
+    "name": "checksums.txt",
+    "url": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/checksums.txt",
+    "bundle": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/checksums.txt.sigstore.json"
+  },
+  "license": {
+    "name": "LICENSE",
+    "url": "https://github.com/tetrateio/releases/releases/download/egd/v1.10.0-tetrate.1.9ebbaa4f35b0/LICENSE"
+  }
+}

@@ -2,10 +2,16 @@
   "schemaVersion": 1,
   "product": "egd",
   "latest": {
-    "stable": "v1.9.2-tetrate.6.a0250132d23d",
+    "stable": "v1.10.0-tetrate.1.9ebbaa4f35b0",
     "prerelease": null
   },
   "versions": [
+    {
+      "version": "v1.10.0-tetrate.1.9ebbaa4f35b0",
+      "prerelease": false,
+      "publishedAt": "2026-11-21T20:25:14.385189Z",
+      "manifest": "v1.10.0-tetrate.1.9ebbaa4f35b0.json"
+    },
     {
       "version": "v1.9.2-tetrate.6.a0250132d23d",
       "prerelease": false,
