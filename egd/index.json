@@ -19,6 +19,12 @@
       "manifest": "v1.9.4-tetrate.1.7a9869383cb9.json"
     },
     {
+      "version": "v1.9.2-tetrate.7.6b6729ff9f14",
+      "prerelease": false,
+      "publishedAt": "2026-11-23T14:18:10.989084Z",
+      "manifest": "v1.9.2-tetrate.7.6b6729ff9f14.json"
+    },
+    {
       "version": "v1.9.2-tetrate.6.a0250132d23d",
       "prerelease": false,
       "publishedAt": "2026-11-17T21:53:49.560288Z",
